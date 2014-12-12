@@ -1,7 +1,6 @@
 """
 A factory for hyperopt's pyll parameter spaces.
 """
-
 import scipy.stats.distributions
 from hyperopt import hp, pyll
 

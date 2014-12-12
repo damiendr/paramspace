@@ -1,7 +1,54 @@
+"""
+Extracts parameter spaces from classes that use Enthought's Traits.
+"""
 from traits.api import HasTraits
 import traits.trait_types
 import logging
 
+
+class ModelTraits(HasTraits):
+    """
+    A subclass of `HasTraits` that provides a convenient `space()`
+    class method returning the parameter space for that class.
+    """
+    @classmethod
+    def space(cls, **kwargs):
+        """
+        Returns the parameter space for `cls`. Sub-spaces for the class' traits
+        will be taken from `kwargs`, when supplied, or inferred from the trait
+        type. Traits for which no sub-space can be inferred will be ignored.
+        """
+        from paramspace import pyll_params
+        return build_class_space(cls, pyll_params, **kwargs)
+
+
+def load(obj):
+    """
+    Decodes a point in parameter space into an object tree,
+    instanciating classes where applicable.
+    """
+    if isinstance(obj, dict):
+        # First decode the contents:
+        kwargs = {k:load(v) for k,v in obj.items()}
+
+        try: # Can we decode the dict as a class?
+            import importlib
+            module = importlib.import_module(kwargs.pop("__module__"))
+            cls = getattr(module, kwargs.pop("__name__"))
+        except KeyError: # Nope, it was just a normal dict
+            return kwargs
+        else: # We have a class! Let's instanciate it:
+            return cls(**kwargs)
+
+    elif isinstance(obj, (list, tuple)):
+        # Decode the contents and return a container of the same type:
+        return type(obj)(load(x) for x in obj)
+
+    # Default: return obj as it is.
+    return obj
+
+
+__container_warning = True
 
 def build_trait_space(sp, name, trait_type):
     """
@@ -19,8 +66,11 @@ def build_trait_space(sp, name, trait_type):
                                 traits.trait_types.Tuple,
                                 traits.trait_types.Dict)):
         # TODO look into container traits
-        logging.warn("Looking for parameters inside container traits"
-                     "is not yet implemented")
+        global __container_warning
+        if __container_warning:
+            logging.warn("Looking for parameters inside container traits"
+                         "is not yet implemented")
+            __container_warning = False
 
     # The user may specify a distribution in the trait metadata:
     dist = trait_type._metadata.get("dist", None)
@@ -66,44 +116,3 @@ def build_class_space(cls, sp, **kwargs):
 
     return space
 
-
-class ModelTraits(HasTraits):
-    """
-    A subclass of `HasTraits` that provides a convenient `space()`
-    class method returning the parameter space for that class.
-    """
-    @classmethod
-    def space(cls, **kwargs):
-        """
-        Returns the parameter space for `cls`. Sub-spaces for the class' traits
-        will be taken from `kwargs`, when supplied, or inferred from the trait
-        type. Traits for which no sub-space can be inferred will be ignored.
-        """
-        from experiments.params import pyll_params
-        return build_class_space(cls, pyll_params, **kwargs)
-
-
-def load(obj):
-    """
-    Decodes a point in parameter space into an object tree,
-    instanciating classes where applicable.
-    """
-    if isinstance(obj, dict):
-        # First decode the contents:
-        kwargs = {k:load(v) for k,v in obj.items()}
-
-        try: # Can we decode the dict as a class?
-            import importlib
-            module = importlib.import_module(kwargs.pop("__module__"))
-            cls = getattr(module, kwargs.pop("__name__"))
-        except KeyError: # Nope, it was just a normal dict
-            return kwargs
-        else: # We have a class! Let's instanciate it:
-            return cls(**kwargs)
-
-    elif isinstance(obj, (list, tuple)):
-        # Decode the contents and return a container of the same type:
-        return type(obj)(load(x) for x in obj)
-
-    # Default: return obj as it is.
-    return obj
