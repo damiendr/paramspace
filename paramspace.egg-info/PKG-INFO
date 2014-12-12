@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: paramspace
+Version: 0.1
+Summary: Generating parameter spaces from model definitions
+Home-page: UNKNOWN
+Author: Damien Drix
+Author-email: damien.drix@gmail.com
+License: UNKNOWN
+Description: 
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering

@@ -34,4 +34,5 @@ setup(
         "scipy>=0.13.3",
         "traits>=4.5.0"
     ],
+    test_suite = 'nose.collector',
 )
