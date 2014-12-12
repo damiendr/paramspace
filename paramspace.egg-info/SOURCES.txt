@@ -1,9 +1,0 @@
-setup.py
-paramspace/__init__.py
-paramspace/pyll_params.py
-paramspace/traits_model.py
-paramspace.egg-info/PKG-INFO
-paramspace.egg-info/SOURCES.txt
-paramspace.egg-info/dependency_links.txt
-paramspace.egg-info/requires.txt
-paramspace.egg-info/top_level.txt
