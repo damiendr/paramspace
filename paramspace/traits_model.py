@@ -3,7 +3,7 @@ Extracts parameter spaces from classes that use Enthought's Traits.
 """
 from traits.api import HasTraits
 import traits.trait_types
-import logging
+import warnings
 
 
 class ModelTraits(HasTraits):
@@ -48,8 +48,6 @@ def load(obj):
     return obj
 
 
-__container_warning = True
-
 def trait_space(sp, path, trait_type):
     """
     Builds a parameter space for a trait of type `trait_type`.
@@ -66,11 +64,8 @@ def trait_space(sp, path, trait_type):
                                 traits.trait_types.Tuple,
                                 traits.trait_types.Dict)):
         # TODO look into container traits
-        global __container_warning
-        if __container_warning:
-            logging.warn("Looking for parameters inside container traits"
-                         "is not yet implemented")
-            __container_warning = False
+        warnings.warn("Looking for parameters inside container traits"
+                      "is not yet implemented")
 
     # The user may specify a distribution in the trait metadata:
     dist = trait_type._metadata.get("dist", None)
@@ -102,12 +97,12 @@ def class_space(cls, sp, path="", **kwargs):
         # events & such as traits. Skip these:
         if ctrait.type != "trait": continue
 
-        path = path + "." + name
+        subpath = path + "." + name
 
         # Did the user provide a parameter space for this trait?
         # If not, build a default parameter space.
         try: tspace = kwargs.pop(name)
-        except KeyError: tspace = trait_space(sp, path, ctrait.trait_type)
+        except KeyError: tspace = trait_space(sp, subpath, ctrait.trait_type)
 
         # Do we have a valid parameter space?
         # If not, let's just ignore this trait.
