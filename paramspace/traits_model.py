@@ -19,7 +19,7 @@ class ModelTraits(HasTraits):
         type. Traits for which no sub-space can be inferred will be ignored.
         """
         from paramspace import pyll_params
-        return build_class_space(cls, pyll_params, **kwargs)
+        return class_space(cls, pyll_params, **kwargs)
 
 
 def load(obj):
@@ -50,7 +50,7 @@ def load(obj):
 
 __container_warning = True
 
-def build_trait_space(sp, name, trait_type):
+def trait_space(sp, path, trait_type):
     """
     Builds a parameter space for a trait of type `trait_type`.
     """
@@ -59,7 +59,7 @@ def build_trait_space(sp, name, trait_type):
         # When the instance type is a subclass of HasTraits,
         # we can build a subspace for its traits, recursively:
         if issubclass(cls, HasTraits):
-            return build_class_space(cls, sp)
+            return class_space(cls, sp)
 
     if isinstance(trait_type, (traits.trait_types.Enum, 
                                 traits.trait_types.List,
@@ -81,10 +81,10 @@ def build_trait_space(sp, name, trait_type):
         low = trait_type._low
         high = trait_type._high
 
-    return sp.param_space(name, low, high, dist)
+    return sp.param_space(path, low, high, dist)
 
 
-def build_class_space(cls, sp, **kwargs):
+def class_space(cls, sp, path="", **kwargs):
     """
     Builds a parameter space for class `cls` inferred from the class' traits,
     except where overriden by `kwargs`.
@@ -102,10 +102,12 @@ def build_class_space(cls, sp, **kwargs):
         # events & such as traits. Skip these:
         if ctrait.type != "trait": continue
 
+        path = path + "." + name
+
         # Did the user provide a parameter space for this trait?
         # If not, build a default parameter space.
         try: tspace = kwargs.pop(name)
-        except KeyError: tspace = build_trait_space(sp, name, ctrait.trait_type)
+        except KeyError: tspace = trait_space(sp, path, ctrait.trait_type)
 
         # Do we have a valid parameter space?
         # If not, let's just ignore this trait.

@@ -15,7 +15,7 @@ def class_space(cls):
     return space
 
 
-def param_space(name, low=None, high=None, dist=None):
+def param_space(path, low=None, high=None, dist=None):
     """
     Creates a parameter space for a parameter defined by its bounds
     and/or distribution.
@@ -28,9 +28,9 @@ def param_space(name, low=None, high=None, dist=None):
             # Let's see if we can convert it to a pyll object:
             rv = dist
             if rv.dist.name == "uniform":
-                dist = hp.uniform(name, *rv.args)
+                dist = hp.uniform(path, *rv.args)
             elif rv.dist.name == "norm":
-                dist = hp.normal(name, *rv.args)
+                dist = hp.normal(path, *rv.args)
             else:
                 raise Exception("Unsupported distribution: %s" % rv.dist.name)
             # TODO implement lognormal
@@ -38,6 +38,9 @@ def param_space(name, low=None, high=None, dist=None):
         if isinstance(dist, pyll.base.Apply):
             # We have a pyll object already.
             param = dist
+
+            # Add our path prefix to the tree:
+            pass # TODO FIXME
 
             # Did the user specify any hard bounds?
             if low is not None:
@@ -51,6 +54,6 @@ def param_space(name, low=None, high=None, dist=None):
     elif not None in (low, high):
         # We only have the lower and upper bounds.
         # Assume a uniform distribution:
-        param = hp.uniform(name, low, high)
+        param = hp.uniform(path, low, high)
 
     return param

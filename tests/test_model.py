@@ -2,7 +2,7 @@
 
 from paramspace.traits_model import ModelTraits, load
 from hyperopt import hp, pyll
-from traits.api import Float, Range, Instance
+from traits.api import Float, Range, Instance, Any
 
 
 class TestModel(ModelTraits):
@@ -60,4 +60,17 @@ def test_nested_traits():
 	assert isinstance(t.a, TestModel)
 	assert t.a.y == 1.0
 	assert t.a.z == 5.0
-	
+
+
+class TestModel3(ModelTraits):
+	y = Float(0.0, dist=hp.uniform("y", 0, 1))
+	a = Any()
+
+
+def test_pyll_distinct():
+	space = TestModel3.space(
+		a = TestModel3.space()
+	)	
+	p = pyll.stochastic.sample(space)
+	assert p["y"] != p["a"]["y"]
+
