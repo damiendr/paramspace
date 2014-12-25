@@ -2,6 +2,7 @@
 Extracts parameter spaces from classes that use Enthought's Traits.
 """
 from traits.api import HasTraits
+from paramspace.expressions import instance, parameter
 import traits.trait_types
 import warnings
 
@@ -19,7 +20,7 @@ class ModelTraits(HasTraits):
         type. Traits for which no sub-space can be inferred will be ignored.
         """
         from paramspace import pyll_params
-        return class_space(cls, pyll_params, **kwargs)
+        return class_space(cls, **kwargs)
 
 
 def load(obj):
@@ -48,7 +49,7 @@ def load(obj):
     return obj
 
 
-def trait_space(sp, path, trait_type):
+def trait_space(path, trait_type):
     """
     Builds a parameter space for a trait of type `trait_type`.
     """
@@ -76,40 +77,38 @@ def trait_space(sp, path, trait_type):
         low = trait_type._low
         high = trait_type._high
 
-    return sp.param_space(path, low, high, dist)
+    if dist is not None or high is not None:
+        return parameter(path, low, high, dist)
+
+    return None
 
 
-def class_space(cls, sp, path="", **kwargs):
+def class_space(cls, **kwargs):
     """
-    Builds a parameter space for class `cls` inferred from the class' traits,
-    except where overriden by `kwargs`.
+    Builds a parameter space for an instance of class `cls` inferred from the
+    class' traits, except where overriden by `kwargs`.
     """
     # Does this class define any traits?
     try: traits = cls.__class_traits__
     except NameError: traits = {}
 
-    # Store the class in the parameter space, so that we can deserialise a
-    # point in that parameter space into the corresponding object tree:
-    space = sp.class_space(cls)
-
+    params = dict()
     for name, ctrait in traits.items():
         # We're only interested in user-defined traits, but Trait also stores
         # events & such as traits. Skip these:
         if ctrait.type != "trait": continue
 
-        subpath = path + "." + name
-
         # Did the user provide a parameter space for this trait?
         # If not, build a default parameter space.
         try: tspace = kwargs.pop(name)
-        except KeyError: tspace = trait_space(sp, subpath, ctrait.trait_type)
+        except KeyError: tspace = trait_space(name, ctrait.trait_type)
 
         # Do we have a valid parameter space?
         # If not, let's just ignore this trait.
-        if tspace is not None: space[name] = tspace
+        if tspace is not None: params[name] = tspace
 
     if kwargs: # We should have popped all the values in kwargs by now:
         raise NameError("%s has no traits named %s." % (cls, kwargs.keys()))
 
-    return space
+    return instance(cls, params)
 
