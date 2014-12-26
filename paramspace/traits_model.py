@@ -34,8 +34,9 @@ def load(obj):
 
         try: # Can we decode the dict as a class?
             import importlib
-            module = importlib.import_module(kwargs.pop("__module__"))
-            cls = getattr(module, kwargs.pop("__name__"))
+            module_name, class_name = kwargs.pop("__class__").rsplit(".", 1)
+            module = importlib.import_module(module_name)
+            cls = getattr(module, class_name)
         except KeyError: # Nope, it was just a normal dict
             return kwargs
         else: # We have a class! Let's instanciate it:
