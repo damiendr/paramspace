@@ -20,6 +20,10 @@ def choice(*options):
     return Parameter(Variable("choice"), (options,))
 
 
+def pchoice(*options):
+    return Parameter(Variable("pchoice"), (options,))
+
+
 def randint(upper):
     return Parameter(Variable("randint"), (upper,))
 
