@@ -19,7 +19,6 @@ class ModelTraits(HasTraits):
         will be taken from `kwargs`, when supplied, or inferred from the trait
         type. Traits for which no sub-space can be inferred will be ignored.
         """
-        from paramspace import pyll_params
         return class_space(cls, **kwargs)
 
 
