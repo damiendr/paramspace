@@ -1,8 +1,8 @@
 """
 Extracts parameter spaces from classes that use Enthought's Traits.
 """
-from traits.api import HasTraits
 from paramspace.expressions import instance, parameter
+from traits.api import HasTraits
 import traits.trait_types
 import warnings
 

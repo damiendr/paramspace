@@ -116,18 +116,19 @@ class VariableLabeler(IdentityMapper):
 
 class PyllMapper(EvaluationMapper):
 
-
     def __init__(self):
-        super(PyllMapper, self).__init__
+        super(PyllMapper, self).__init__()
+        # Setup the contexts we will use for resolving function names:
         from hyperopt.pyll.base import scope
         from hyperopt import hp
-        self.contexts = (hp, scope)
-
+        self.contexts = (hp, scope) # in order of precedence
 
     def map_variable(self, expr):
+        # Try to resolve the variable as a hyperopt function:
         for ctx in self.contexts:
             try: return getattr(ctx, expr.name)
             except AttributeError: pass
+        # Fall back: assume it's a string constant:
         return expr.name
 
     def map_call_with_kwargs(self, expr):
