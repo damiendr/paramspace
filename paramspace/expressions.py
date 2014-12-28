@@ -9,11 +9,14 @@ class Parameter(Call):
 
 
 class Instance(CallWithKwargs):
-    def default(self, name):
-        return self.label_vars(path=name)
+    def default(self, root):
+        return self.label_vars(root)
 
-    def label_vars(self, path):
-        return VariableLabeler()(self, path)
+    def label_vars(self, root):
+        return VariableLabeler()(self, root)
+
+    def to_hp(self):
+        return PyllMapper()(self)
 
 
 def choice(*options):
@@ -83,7 +86,9 @@ def parameter(name, low=None, high=None, dist=None):
 
 
 class VariableLabeler(IdentityMapper):
-
+    """
+    Adds labels that identify independant random variables.
+    """
     def __init__(self):
         super(VariableLabeler, self).__init__()
         self.suffixes = defaultdict(lambda: 0)
@@ -92,9 +97,10 @@ class VariableLabeler(IdentityMapper):
         if not isinstance(expr, Parameter):
             return super(VariableLabeler, self).map_call(expr, path)
 
-        # We have a parameter; let's create a label for it. The label is the
-        # current path, plus a suffix when more than one variable share the
-        # same path:
+        # We have a parameter, let's create a label for it.
+
+        # The label is the current path, plus a suffix when more than one
+        # variable share the same path:
         idx = self.suffixes[path]
         self.suffixes[path] += 1
         if idx == 0: label = path
@@ -109,15 +115,19 @@ class VariableLabeler(IdentityMapper):
     def map_call_with_kwargs(self, expr, path=""):
         function = self(expr.function, path)
         parameters = [self(p, path) for p in expr.parameters]
-        kw_parameters = {key:self(value, path + "." + key)
+        prefix = path + "." if path else ""
+        kw_parameters = {key:self(value, prefix + key)
                          for key, value in expr.kw_parameters.items()}
         return type(expr)(function, parameters, kw_parameters)
 
 
 class PyllMapper(EvaluationMapper):
-
+    """
+    Converts a Pymbolic expression to the equivalent Pyll expression.
+    """
     def __init__(self):
         super(PyllMapper, self).__init__()
+
         # Setup the contexts we will use for resolving function names:
         from hyperopt.pyll.base import scope
         from hyperopt import hp
@@ -128,12 +138,18 @@ class PyllMapper(EvaluationMapper):
         for ctx in self.contexts:
             try: return getattr(ctx, expr.name)
             except AttributeError: pass
-        # Fall back: assume it's a string constant:
+
+        # Fallback: assume it's a string literal:
         return expr.name
 
     def map_call_with_kwargs(self, expr):
-        kwargs = {key:self.rec(value)
-                  for key, value in expr.kw_parameters.items()}
-        kwargs["__class__"] = expr.function.name
-        return kwargs
+        if isinstance(expr, Instance):
+            # It's a class instance, convert it to a dict with a
+            # __class__ member:
+            kwargs = {key:self.rec(value)
+                      for key, value in expr.kw_parameters.items()}
+            kwargs["__class__"] = expr.function.name
+            return kwargs
+
+        return super(PyllMapper, self).map_call_with_kwargs(expr)
 

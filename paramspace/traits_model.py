@@ -22,33 +22,6 @@ class ModelTraits(HasTraits):
         return class_space(cls, **kwargs)
 
 
-def load(obj):
-    """
-    Decodes a point in parameter space into an object tree,
-    instanciating classes where applicable.
-    """
-    if isinstance(obj, dict):
-        # First decode the contents:
-        kwargs = {k:load(v) for k,v in obj.items()}
-
-        try: # Can we decode the dict as a class?
-            import importlib
-            module_name, class_name = kwargs.pop("__class__").rsplit(".", 1)
-            module = importlib.import_module(module_name)
-            cls = getattr(module, class_name)
-        except KeyError: # Nope, it was just a normal dict
-            return kwargs
-        else: # We have a class! Let's instanciate it:
-            return cls(**kwargs)
-
-    elif isinstance(obj, (list, tuple)):
-        # Decode the contents and return a container of the same type:
-        return type(obj)(load(x) for x in obj)
-
-    # Default: return obj as it is.
-    return obj
-
-
 def trait_space(path, trait_type):
     """
     Builds a parameter space for a trait of type `trait_type`.
