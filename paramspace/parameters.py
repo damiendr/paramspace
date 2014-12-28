@@ -1,4 +1,6 @@
 
+from paramspace.expressions import label_vars, to_hp
+
 
 class sample(object):
     """
@@ -30,7 +32,7 @@ def load_param(name, space, scope=None):
     else:
         # Draw a random sample from the parameter space using pyll:
         from hyperopt.pyll import stochastic
-        hp_space = space.label_vars(name).to_hp()
+        hp_space = to_hp(label_vars(space, name))
         value = stochastic.sample(hp_space)
 
     # Decode the value into an object tree:

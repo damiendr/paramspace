@@ -9,14 +9,15 @@ class Parameter(Call):
 
 
 class Instance(CallWithKwargs):
-    def default(self, root):
-        return self.label_vars(root)
+    pass
 
-    def label_vars(self, root):
-        return VariableLabeler()(self, root)
 
-    def to_hp(self):
-        return PyllMapper()(self)
+def label_vars(space, root):
+    return VariableLabeler()(space, root)
+
+
+def to_hp(space):
+    return PyllMapper()(space)
 
 
 def choice(*options):
