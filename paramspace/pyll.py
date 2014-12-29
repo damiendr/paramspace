@@ -1,5 +1,6 @@
 
-from hyperopt.pyll.base import scope, as_apply, Apply
+from hyperopt.pyll.base import scope, as_apply
+from hyperopt import hp
 from collections import defaultdict
 
 
@@ -7,35 +8,39 @@ param_names = {"randint", "uniform", "normal", "loguniform", "lognormal",
                "quniform", "qnormal", "qloguniform", "qlognormal"}
 
 for param in param_names:
+    # hyperopt.pyll.base.scope defines the label-less forms of the above
+    # hyperopt functions:
     globals()[param] = getattr(scope, param)
 
 
-def is_float(rv_name): return rv_name != "randint"
-
-
 def choice(*options):
+    # Like hp.choice, but without a label.
     return scope.switch(scope.randint(len(options)), *options)
 
 
 def pchoice(*options):
+    # Like hp.pchoice, but without a label.
     p, options = zip(*p_options)
     n_options = len(options)
     ch = scope.categorical(p, upper=n_options)
     return scope.switch(ch, *options)
 
 
-def label_vars(expr, path, suffixes=None):
+def label_vars(expr, path="", suffixes=None):
     if suffixes is None: suffixes = defaultdict(lambda: 0)
 
     if expr.name in param_names:
+        # We have a parameter. Let's find a label for it:
         idx = suffixes[path]
         suffixes[path] += 1
         if idx == 0: label = path
         else: label = "%s_%d" % (path, idx)
 
-        param = scope.hyperopt_param(label, expr)
-        if is_float(expr.name):
-            param = scope.float(param)
+        # Now that we have the label, we can rebuild the node
+        # using the corresponding method in hyperopt.hp:
+        args = expr.pos_args
+        kwargs = dict(expr.named_args)
+        param = getattr(hp, expr.name)(label, *args, **kwargs)
         return param
 
     elif expr.name == "dict":
