@@ -109,33 +109,7 @@ print search_space
     22     Literal{0.001}
 
 
-We can now draw a random sample from that space:
-
-
-```python
-neuron = load_param("neuron", search_space)
-print neuron
-```
-
-    <__main__.NeuronModel object at 0x111b2fe90>
-
-
-Let's inspect the resulting object:
-
-
-```python
-import yaml
-print yaml.dump(neuron)
-```
-
-    !!python/object:__main__.NeuronModel
-    __traits_version__: 4.5.0
-    learn: !!python/object:__main__.DecayHebb {__traits_version__: 4.5.0, decay: 0.0018778939663813832}
-    lr: 8.507942215338842e-05
-    
-
-
-We can also convert the parameter space to a form that `hyperopt` can sample:
+We can now convert the parameter space to a form that `hyperopt` can sample:
 
 
 ```python
