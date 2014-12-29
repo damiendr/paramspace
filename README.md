@@ -4,6 +4,8 @@
 A bridge between declarative models, parameter spaces and parameter optimisation
 tools.
 
+Development in alpha stage.
+
 ## What is it?
 
 Packages such as Enthought's
