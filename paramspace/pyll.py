@@ -29,6 +29,9 @@ def pchoice(*options):
 def label_vars(expr, path="", suffixes=None):
     if suffixes is None: suffixes = defaultdict(lambda: 0)
 
+    if expr.name == "hyperopt_param":
+        return expr # that one's already labeled.
+
     if expr.name in param_names:
         # We have a parameter. Let's find a label for it:
         idx = suffixes[path]
