@@ -1,5 +1,4 @@
 
-from paramspace.expressions import to_hp
 from paramspace.pyll import label_vars
 
 
