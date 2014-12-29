@@ -24,7 +24,7 @@ configured with the appropriate parameters.
 ## Install
 
 First install the dependencies:
-- [hyperopt](hyperopt.github.io/hyperopt) >= 0.0.2 (from pip)
+- [hyperopt](http://hyperopt.github.io/hyperopt) >= 0.0.2 (from pip)
 - [traits](http://code.enthought.com/projects/traits/) >= 4.5.0 (from pip)
 
 Then clone this repository and run `python setup.py install`.
