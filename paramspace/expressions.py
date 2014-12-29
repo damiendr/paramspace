@@ -12,11 +12,16 @@ class Instance(CallWithKwargs):
     pass
 
 
-def label_vars(space, root):
+def label_vars(root, space):
     return VariableLabeler()(space, root)
 
 
-def to_hp(space):
+def to_hp(root, space):
+    from hyperopt.pyll.base import Apply
+    if isinstance(space, Apply): return space
+
+    if root is not None:
+        space = label_vars(root, space)
     return PyllMapper()(space)
 
 
@@ -71,8 +76,8 @@ def instance(cls, params):
 
 def parameter(name, low=None, high=None, dist=None):
     if dist is not None:
-        # We had a distribution already, but maybe the user specified hard
-        # bounds in addition to it?
+        # We have a distribution already, but maybe the user specified
+        # hard bounds in addition to it?
         if low is not None: dist = Call(Variable("max"), (low, dist))
         if high is not None: dist = Call(Variable("min"), (high, dist))
     else:
@@ -100,8 +105,8 @@ class VariableLabeler(IdentityMapper):
 
         # We have a parameter, let's create a label for it.
 
-        # The label is the current path, plus a suffix when more than one
-        # variable share the same path:
+        # The label is the current path, plus a suffix when more than
+        # one variable share the same path:
         idx = self.suffixes[path]
         self.suffixes[path] += 1
         if idx == 0: label = path
@@ -150,7 +155,8 @@ class PyllMapper(EvaluationMapper):
             kwargs = {key:self.rec(value)
                       for key, value in expr.kw_parameters.items()}
             kwargs["__class__"] = expr.function.name
-            return kwargs
+            from hyperopt.pyll.base import as_apply
+            return as_apply(kwargs)
 
         return super(PyllMapper, self).map_call_with_kwargs(expr)
 

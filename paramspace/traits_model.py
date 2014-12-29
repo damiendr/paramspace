@@ -1,7 +1,7 @@
 """
 Extracts parameter spaces from classes that use Enthought's Traits.
 """
-from paramspace.expressions import instance, parameter
+from paramspace.pyll import instance, parameter
 from traits.api import HasTraits
 import traits.trait_types
 import warnings
@@ -15,9 +15,10 @@ class ModelTraits(HasTraits):
     @classmethod
     def space(cls, **kwargs):
         """
-        Returns the parameter space for `cls`. Sub-spaces for the class' traits
-        will be taken from `kwargs`, when supplied, or inferred from the trait
-        type. Traits for which no sub-space can be inferred will be ignored.
+        Returns the parameter space for `cls`. Sub-spaces for the class'
+        traits will be taken from `kwargs`, when supplied, or inferred
+        from the trait type. Traits for which no sub-space can be
+        inferred will be ignored.
         """
         return class_space(cls, **kwargs)
 
@@ -34,9 +35,9 @@ def trait_space(path, trait_type):
             return class_space(cls, sp)
 
     if isinstance(trait_type, (traits.trait_types.Enum, 
-                                traits.trait_types.List,
-                                traits.trait_types.Tuple,
-                                traits.trait_types.Dict)):
+                               traits.trait_types.List,
+                               traits.trait_types.Tuple,
+                               traits.trait_types.Dict)):
         # TODO look into container traits
         warnings.warn("Looking for parameters inside container traits"
                       "is not yet implemented")
@@ -58,8 +59,8 @@ def trait_space(path, trait_type):
 
 def class_space(cls, **kwargs):
     """
-    Builds a parameter space for an instance of class `cls` inferred from the
-    class' traits, except where overriden by `kwargs`.
+    Builds a parameter space for an instance of class `cls` inferred
+    from the class' traits, except where overriden by `kwargs`.
     """
     # Does this class define any traits?
     try: traits = cls.__class_traits__
@@ -67,8 +68,8 @@ def class_space(cls, **kwargs):
 
     params = dict()
     for name, ctrait in traits.items():
-        # We're only interested in user-defined traits, but Trait also stores
-        # events & such as traits. Skip these:
+        # We're only interested in user-defined traits, but Trait also
+        # stores events & such as traits. Skip these:
         if ctrait.type != "trait": continue
 
         # Did the user provide a parameter space for this trait?

@@ -31,8 +31,7 @@ setup(
     packages=['paramspace'],
     install_requires=[
         "hyperopt>=0.0.2",
-        "scipy>=0.13.1",
-        "traits>=4.5.0"
+        "traits>=4.5.0",
     ],
     test_suite = 'nose.collector',
 )
