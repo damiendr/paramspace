@@ -13,6 +13,9 @@ for param in param_names:
     globals()[param] = getattr(scope, param)
 
 
+def bool(): return randint(2)
+
+
 def choice(*options):
     # Like hp.choice, but without a label.
     return scope.switch(scope.randint(len(options)), *options)
