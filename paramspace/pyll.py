@@ -29,7 +29,7 @@ def pchoice(*options):
     return scope.switch(ch, *options)
 
 
-def label_vars(expr, path="", suffixes=None):
+def label_vars(expr, path="", suffixes=None, delim="."):
     if suffixes is None: suffixes = defaultdict(lambda: 0)
 
     if expr.name == "hyperopt_param":
@@ -52,11 +52,11 @@ def label_vars(expr, path="", suffixes=None):
     elif expr.name == "dict":
         new_dict = {}
         for (key, value) in expr.named_args:
-            new_dict[key] = label_vars(value, path + "." + key, suffixes)
+            new_dict[key] = label_vars(value, path + delim + key, suffixes, delim)
         return scope.dict(**new_dict)
 
     # Default:
-    inputs = [label_vars(v, path, suffixes) for v in expr.inputs()]
+    inputs = [label_vars(v, path, suffixes, delim) for v in expr.inputs()]
     return expr.clone_from_inputs(inputs)
 
 
